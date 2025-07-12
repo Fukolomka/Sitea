@@ -11,7 +11,8 @@ import {
   Settings, 
   LogOut,
   Menu,
-  X
+  X,
+  Plus
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -59,9 +60,20 @@ export function Navbar({ user, onLogin, onLogout }: NavbarProps) {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                <div className="flex items-center space-x-2">
-                  <Wallet className="w-4 h-4" />
-                  <span className="font-semibold">${user.balance.toFixed(2)}</span>
+                <div className="flex items-center space-x-2 bg-gray-800 px-3 py-2 rounded-lg">
+                  <Wallet className="w-4 h-4 text-green-400" />
+                  <span className="font-semibold text-green-400">${user.balance.toFixed(2)}</span>
+                  <Button
+                    onClick={() => {
+                      const event = new CustomEvent('openBalanceModal');
+                      window.dispatchEvent(event);
+                    }}
+                    size="sm"
+                    variant="ghost"
+                    className="text-green-400 hover:bg-gray-700 h-6 w-6 p-0 ml-1"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </Button>
                 </div>
                 <div className="flex items-center space-x-2">
                   {user.avatar && (

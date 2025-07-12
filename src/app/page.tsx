@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { CaseCard } from '@/components/CaseCard';
+import { BalanceModal } from '@/components/BalanceModal';
 import { Button } from '@/components/ui/button';
 import { Case } from '@/types';
 
@@ -10,10 +11,22 @@ export default function HomePage() {
   const [cases, setCases] = useState<Case[]>([]);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [balanceModalOpen, setBalanceModalOpen] = useState(false);
 
   useEffect(() => {
     fetchCases();
     fetchUser();
+    
+    // Обработчик для открытия модального окна пополнения баланса
+    const handleOpenBalanceModal = () => {
+      setBalanceModalOpen(true);
+    };
+    
+    window.addEventListener('openBalanceModal', handleOpenBalanceModal);
+    
+    return () => {
+      window.removeEventListener('openBalanceModal', handleOpenBalanceModal);
+    };
   }, []);
 
   const fetchCases = async () => {
@@ -60,6 +73,10 @@ export default function HomePage() {
     window.location.href = `/open/${caseId}`;
   };
 
+  const handleBalanceUpdate = (newBalance: number) => {
+    setUser(prev => prev ? { ...prev, balance: newBalance } : null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100">
@@ -78,6 +95,16 @@ export default function HomePage() {
     <div className="min-h-screen bg-gray-100">
       <Navbar user={user} onLogin={handleLogin} onLogout={handleLogout} />
       
+      {/* Модальное окно пополнения баланса */}
+      {user && (
+        <BalanceModal
+          isOpen={balanceModalOpen}
+          onClose={() => setBalanceModalOpen(false)}
+          currentBalance={user.balance}
+          onBalanceUpdate={handleBalanceUpdate}
+        />
+      )}
+      
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-700 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -88,7 +115,7 @@ export default function HomePage() {
             <p className="text-xl md:text-2xl mb-8 opacity-90">
               Open cases, win skins, and build your inventory
             </p>
-            {!user && (
+            {!user ? (
               <Button
                 onClick={handleLogin}
                 size="lg"
@@ -96,6 +123,26 @@ export default function HomePage() {
               >
                 Login with Steam to Start
               </Button>
+            ) : (
+              <div className="flex flex-col items-center space-y-4">
+                <p className="text-lg opacity-90">
+                  Добро пожаловать, {user.username}!
+                </p>
+                <div className="flex space-x-4">
+                  <Button
+                    onClick={() => setBalanceModalOpen(true)}
+                    size="lg"
+                    className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg"
+                  >
+                    Пополнить баланс
+                  </Button>
+                  <div className="flex items-center bg-white bg-opacity-20 px-6 py-3 rounded-lg">
+                    <span className="text-lg font-semibold">
+                      Баланс: ${user.balance.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>
